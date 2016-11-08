@@ -209,6 +209,19 @@ NS_ASSUME_NONNULL_BEGIN
                                            destination:(nullable NSURL * (^)(NSURL *targetPath, NSURLResponse *response))destination
                                      completionHandler:(nullable void (^)(NSURLResponse *response, NSURL *filePath, NSError *error))completionHandler;
 
+/**
+ Creates and runs an `NSOperation` with a `dataTaskWithRequest` request.
+ 
+ @param request The HTTP request for the request.
+ @param uploadProgressBlock A block object to be executed when the upload progress is updated. Note this block is called on the session queue, not the main queue.
+ @param downloadProgressBlock A block object to be executed when the download progress is updated. Note this block is called on the session queue, not the main queue.
+ @param completionHandler A block object to be executed when the task finishes. This block has no return value and takes three arguments: the server response, the response object created by that serializer, and the error that occurred, if any.
+ */
+- (nullable NSOperation *)dataOperationWithRequest:(NSURLRequest *)request
+                                    uploadProgress:(nullable void (^)(NSProgress *uploadProgress))uploadProgressBlock
+                                  downloadProgress:(nullable void (^)(NSProgress *downloadProgress))downloadProgressBlock
+                                 completionHandler:(nullable void (^)(NSURLResponse *response, id _Nullable responseObject,  NSError * _Nullable error))completionHandler;
+
 @end
 
 NS_ASSUME_NONNULL_END

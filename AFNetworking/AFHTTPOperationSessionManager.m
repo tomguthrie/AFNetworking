@@ -283,4 +283,26 @@
     return operation;
 }
 
+- (nullable NSOperation *)dataOperationWithRequest:(NSURLRequest *)request
+                                    uploadProgress:(nullable void (^)(NSProgress *uploadProgress))uploadProgressBlock
+                                  downloadProgress:(nullable void (^)(NSProgress *downloadProgress))downloadProgressBlock
+                                 completionHandler:(nullable void (^)(NSURLResponse *response, id _Nullable responseObject,  NSError * _Nullable error))completionHandler
+{
+    NSOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+        dispatch_group_t dispatchGroup = dispatch_group_create();
+        dispatch_group_enter(dispatchGroup);
+        [[super dataTaskWithRequest:request uploadProgress:uploadProgressBlock downloadProgress:downloadProgressBlock completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
+            dispatch_group_leave(dispatchGroup);
+            if (completionHandler) {
+                completionHandler(response, responseObject, error);
+            }
+        }] resume];
+        dispatch_group_wait(dispatchGroup, DISPATCH_TIME_FOREVER);
+    }];
+    
+    [self.requestsOperationQueue addOperation:operation];
+    
+    return operation;
+}
+
 @end
