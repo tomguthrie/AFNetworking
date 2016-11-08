@@ -260,4 +260,27 @@
     return operation;
 }
 
+- (nullable NSOperation *)downloadOperationWithRequest:(NSURLRequest *)request
+                                              progress:(nullable void (^)(NSProgress *downloadProgress)) downloadProgressBlock
+                                           destination:(nullable NSURL * (^)(NSURL *targetPath, NSURLResponse *response))destination
+                                     completionHandler:(nullable void (^)(NSURLResponse *response, NSURL *filePath, NSError *error))completionHandler
+{
+    NSOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+        dispatch_group_t dispatchGroup = dispatch_group_create();
+        dispatch_group_enter(dispatchGroup);
+        [[super downloadTaskWithRequest:request progress:downloadProgressBlock destination:destination
+                      completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
+                          dispatch_group_leave(dispatchGroup);
+                          if (completionHandler) {
+                              completionHandler(response, filePath, error);
+                          }
+                      }] resume];
+        dispatch_group_wait(dispatchGroup, DISPATCH_TIME_FOREVER);
+    }];
+    
+    [self.requestsOperationQueue addOperation:operation];
+    
+    return operation;
+}
+
 @end
